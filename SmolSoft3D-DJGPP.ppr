@@ -1,0 +1,80 @@
+[Config]
+Relative path=1
+Compilator.FileName=
+Compilator.PSPar=
+Compilator.Log=
+Compilator.Run=
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.ParsLog=
+Prog1=
+Prog2=
+Prog3=
+Prog4=
+Prog5=
+DefaultDir=
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+[Project tree]
+SmolSoft3D-DJGPP
+	+build
+		Makefile
+	+source
+		source\main.cpp
+		source\math.hpp
+		source\renderer.hpp
+		source\video.hpp
+		source\input.hpp
+[Open project files]
+0=source\main.cpp
+1=source\math.hpp
+2=source\renderer.hpp
+3=source\sdl_extra.hpp
+4=source\video.hpp
+5=Makefile
+6=make.out.txt
+7=..\djgpp\include\glm\fwd.hpp
+8=..\djgpp\include\glm\detail\qualifier.hpp
+9=..\djgpp\include\glm\detail\setup.hpp
+10=..\djgpp\include\allegro\internal\alconfig.h
+11=source\input.hpp
+[Selected Project Files]
+Main=source\main.cpp
+Selected=source\input.hpp
+[source\main.cpp]
+TopLine=97
+Caret=28,110
+[source\math.hpp]
+TopLine=1
+Caret=8,7
+[source\renderer.hpp]
+TopLine=1
+Caret=50,455
+[source\sdl_extra.hpp]
+TopLine=1
+Caret=24,72
+[source\video.hpp]
+TopLine=56
+Caret=20,20
+[Makefile]
+TopLine=1
+Caret=39,10
+[make.out.txt]
+TopLine=1
+Caret=17,1
+[..\djgpp\include\glm\fwd.hpp]
+TopLine=97
+Caret=3,87
+[..\djgpp\include\glm\detail\qualifier.hpp]
+TopLine=41
+Caret=33,136
+[..\djgpp\include\glm\detail\setup.hpp]
+TopLine=158
+Caret=1,180
+[..\djgpp\include\allegro\internal\alconfig.h]
+TopLine=104
+Caret=47,115
+[source\input.hpp]
+TopLine=1
+Caret=21,3

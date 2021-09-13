@@ -5,12 +5,11 @@
 #include <array>
 #include <vector>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
 #include "math.hpp"
+#include "video.hpp"
 
 
 // a vertex in 3D space with w scaling, color, and uv information
@@ -21,63 +20,63 @@ struct Vertex3D
     glm::vec2 uv;
     
     // constructs a default vertex
-    inline constexpr Vertex3D():
+    inline Vertex3D():
         pos(0.0f, 0.0f, 0.0f, 1.0f),
         color(255, 255, 255, 255),
         uv(0.0f, 0.0f)
     {}
     
     // constructs a vertex from a 3D point
-    inline constexpr Vertex3D(const glm::vec3& pos):
+    inline Vertex3D(const glm::vec3& pos):
         pos(pos, 1.0f),
         color{ 255, 255, 255, 255 },
         uv(0.0f, 0.0f)
     {}
     
     // constructs a vertex from a 3D point and color
-    inline constexpr Vertex3D(const glm::vec3& pos, const SDL_Color& color):
+    inline Vertex3D(const glm::vec3& pos, const VIDEO_Color& color):
         pos(pos, 1.0f),
         color(ToVec4(color)),
         uv(0.0f, 0.0f)
     {}
     
     // constructs a vertex from a 3D point and texture coordinate
-    inline constexpr Vertex3D(const glm::vec3& pos, const glm::vec2& uv):
+    inline Vertex3D(const glm::vec3& pos, const glm::vec2& uv):
         pos(pos, 1.0f),
         color{ 255, 255, 255, 255 },
         uv(uv)
     {}
     
     // constructs a vertex from a 3D point, color, and texture coordinate
-    inline constexpr Vertex3D(const glm::vec3& pos, const SDL_Color& color, const glm::vec2& uv):
+    inline Vertex3D(const glm::vec3& pos, const VIDEO_Color& color, const glm::vec2& uv):
         pos(pos, 1.0f),
         color(ToVec4(color)),
         uv(uv)
     {}
     
     // constructs a vertex from a 3D point, glm::vec4 color value, and texture coordinate
-    inline constexpr Vertex3D(const glm::vec3& pos, const glm::vec4& color, const glm::vec2& uv):
+    inline Vertex3D(const glm::vec3& pos, const glm::vec4& color, const glm::vec2& uv):
         pos(pos, 1.0f),
         color(color),
         uv(uv)
     {}
     
     // constructs a vertex from a 3D point, w scalar, glm::vec4 color value, and texture coordinate
-    inline constexpr Vertex3D(const glm::vec4& pos, const glm::vec4& color, const glm::vec2& uv):
+    inline Vertex3D(const glm::vec4& pos, const glm::vec4& color, const glm::vec2& uv):
         pos(pos),
         color(color),
         uv(uv)
     {}
     
     // prepares a vertex to be interpolated by storing 1/pos.z in pos.w and multiplying every other value by pos.w
-    inline constexpr Vertex3D Interp() const
+    inline Vertex3D Interp() const
     {
         auto w = 1 / pos.z;
         return Vertex3D(glm::vec4(pos.x * w, pos.y * w, pos.z * w, w), color * w, uv * w);
     }
     
     // restores a value after it has been interpolated by dividing every value by pos.w and storing 1 in pos.w
-    inline constexpr Vertex3D Restore() const
+    inline Vertex3D Restore() const
     {
         auto w = pos.w;
         return Vertex3D(glm::vec4(pos.x / w, pos.y / w, pos.z / w, 1.0f), color / w, uv / w);
@@ -221,11 +220,11 @@ struct Screen
 // a rendering target with a frame buffer
 struct Target
 {
-    SDL_Surface* surface;
+    VIDEO_Surface* surface;
     std::vector<float> depth_buffer;
     
     // constructs a target from a surface and resizes the depth buffer accordingly
-    inline Target(SDL_Surface* surface):
+    inline Target(VIDEO_Surface* surface):
         surface(surface)
     {
         depth_buffer.resize(surface->w * surface->h);
@@ -233,7 +232,7 @@ struct Target
     }
     
     // blits a single pixel onto the render target if the given depth permits it
-    void Blit(int x, int y, float depth, const SDL_Color& color)
+    void Blit(int x, int y, float depth, const VIDEO_Color& color)
     {
         if (x >= 0 && x < surface->w && y >= 0 && y < surface->h)
         {
@@ -241,15 +240,15 @@ struct Target
             if (depth < depth_buffer[depth_i])
             {
                 depth_buffer[depth_i] = depth;
-                SDL_Blit(surface, x, y, color);
+                VIDEO_Blit(surface, x, y, color);
             }
         }
     }
     
     // reads a single pixel color from the surface
-    SDL_Color Read(int x, int y) const
+    VIDEO_Color Read(int x, int y) const
     {
-        return SDL_ReadPixel(surface, x, y);
+        return VIDEO_ReadPixel(surface, x, y);
     }
     
     // clears the depth buffer by filling it with ones
@@ -259,10 +258,10 @@ struct Target
     }
     
     // clears the surface with the given SDL_Color value
-    void ClearSurface(const SDL_Color& color)
+    void ClearSurface(const VIDEO_Color& color)
     {
-        Uint32 pixel = SDL_MapRGBA(surface->format, color.r, color.g, color.b, color.a);
-        SDL_FillRect(surface, nullptr, pixel);
+        //Uint32 pixel = SDL_MapRGBA(surface->format, color.r, color.g, color.b, color.a);
+        //SDL_FillRect(surface, nullptr, pixel);
     }
 };
 
@@ -320,10 +319,10 @@ inline Triangle3D ScaleToScreen(const Triangle3D& triangle, const Screen& screen
 // software renderer for 3D polygons
 struct Renderer3D
 {
-    SDL_Surface* sampler = nullptr;
+    VIDEO_Surface* sampler = nullptr;
     
     // changes which SDL_Surface the renderer samples textures from, if any
-    inline void SetSampler(SDL_Surface* sampler)
+    inline void SetSampler(VIDEO_Surface* sampler)
     {
         this->sampler = sampler;
     }
@@ -391,7 +390,7 @@ struct Renderer3D
             // find height
             auto y1 = verts[0].pos.y;
             auto y2 = verts[1].pos.y;
-            auto height = std::abs(std::round(y2) - std::round(y1));
+            auto height = std::abs(glm::round(y2) - glm::round(y1));
             
             // get top vertex (slight misnomer; can also be single bottom vertex)
             const Vertex3D* t_vert = &verts[0];
@@ -422,21 +421,21 @@ struct Renderer3D
             
             if (y1 < y2)
             {
-                t_clip = std::round(Remap(0.0f,   y1, y2, 0.0f, height)) + 0.5f;
-                b_clip = std::round(Remap(clip.y, y1, y2, 0.0f, height)) - 0.5f;
+                t_clip = glm::round(Remap(0.0f,   y1, y2, 0.0f, height)) + 0.5f;
+                b_clip = glm::round(Remap(clip.y, y1, y2, 0.0f, height)) - 0.5f;
             }
             else
             {
-                t_clip = std::round(Remap(clip.y, y1, y2, 0.0f, height)) + 0.5f;
-                b_clip = std::round(Remap(0.0f,   y1, y2, 0.0f, height)) - 0.5f;
+                t_clip = glm::round(Remap(clip.y, y1, y2, 0.0f, height)) + 0.5f;
+                b_clip = glm::round(Remap(0.0f,   y1, y2, 0.0f, height)) - 0.5f;
             }
             
             // draw pixels
             for (float y = std::max(0.5f, t_clip); y <= std::min(height, b_clip); y += 1.0f)
             {
                 // find edges of current row
-                auto x1 = std::round(Remap(y, 0.0f, height, t_vert->pos.x, l_vert->pos.x));
-                auto x2 = std::round(Remap(y, 0.0f, height, t_vert->pos.x, r_vert->pos.x));
+                auto x1 = glm::round(Remap(y, 0.0f, height, t_vert->pos.x, l_vert->pos.x));
+                auto x2 = glm::round(Remap(y, 0.0f, height, t_vert->pos.x, r_vert->pos.x));
                 
                 // draw current row
                 for (float x = std::max(x1, 0.5f); x <= std::min(x2, clip.x - 0.5f); x += 1.0f)
@@ -449,11 +448,11 @@ struct Renderer3D
                     auto vertex = Lerp(t_vert_i, Lerp(l_vert_i, r_vert_i, xp), yp).Restore();
                     
                     // determine color
-                    SDL_Color color = ToColor(vertex.color);
+                    VIDEO_Color color = ToColor(vertex.color);
                     
                     // blend sample color
                     if (sampler != nullptr)
-                    { color = Blend(color, SDL_Sample(sampler, vertex.uv.x, vertex.uv.y)); }
+                    { color = Blend(color, VIDEO_Sample(sampler, vertex.uv.x, vertex.uv.y)); }
                     
                     // determine position at which to draw our pixel
                     auto yy = (int)(Lerp(y1, y2, yp));
